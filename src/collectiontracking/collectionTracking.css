@@ -1,5 +1,30 @@
 /* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
-.button{
-	-fx-background-color:rgb(255,128,192);
-	-fx-text-fill:rgb(0,0,0);
+.theme {
+    -fx-background-color: rgb(250,235,215);
+    -fx-font-size: 14px;
+}
+
+.split-pane {
+    -fx-padding: 0;
+    -fx-border-width: 0;
+    -fx-background-color: rgb(255,228,225);
+}
+
+.button {
+    -fx-background-color:
+        linear-gradient(
+            derive(grey, 120%), 
+            derive(grey, 90%)
+        ),
+        radial-gradient(
+            center 50% -40%, 
+            radius 180%, 
+            rgb(255,250,250) 55%, 
+            rgb(255,245,238) 55%
+        );
+    -fx-background-radius: 4, 3;
+    -fx-background-insets: 0, 1;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.55) , 5, 0.0 , 0 , 1 );
+    -fx-text-fill: derive(grey, -60%);
+    -fx-padding: 3 11 3 11;
 }

@@ -9,5 +9,6 @@ public interface collectionList {
 	public String getCollectionName();
 	public String getItemName();
 	public ItemState getItemState();
+	public String getItemDescTextField();
 	public String getItemDescription();
 }

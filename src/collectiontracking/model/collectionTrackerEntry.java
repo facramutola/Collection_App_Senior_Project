@@ -50,15 +50,21 @@ public class collectionTrackerEntry implements collectionTracker {
 	public final class CollectionEntry implements ObservableCollectionItem {
 		private final SimpleStringProperty collectionName;
 		private final SimpleStringProperty itemName;
+		private final SimpleStringProperty itemDescTextField;
 		private final SimpleObjectProperty<ItemState> itemState = new SimpleObjectProperty<>(ItemState.DO_NOT_HAVE);
 		private final SimpleStringProperty itemDescription;
 
-		CollectionEntry(String itemName, String collectionName) {
+		CollectionEntry(String collectionName, String itemName){
+			this(collectionName, itemName, null);
+		}
+		
+		CollectionEntry(String itemName, String collectionName, String itemDescTextField) {
 			assert !collectionNames.contains(itemName);
 			assert !collectionsMap.get(itemName).contains(collectionName);
 			assert !itemsMap.containsKey(itemName);
 			this.collectionName = new SimpleStringProperty(collectionName);
 			this.itemName = new SimpleStringProperty(itemName);
+			this.itemDescTextField = new SimpleStringProperty(itemDescTextField);
 			this.itemDescription = new SimpleStringProperty("");
 		}
 
@@ -121,6 +127,16 @@ public class collectionTrackerEntry implements collectionTracker {
 			this.itemState.set(HAVE);
 		}
 
+		private void setItemDescTextField(String itemDescTextField) {
+			this.itemDescTextField.set(itemDescTextField);
+		}
+		
+		@Override
+		public String getItemDescTextField() {
+			// TODO Auto-generated method stub
+			return itemDescTextField.get();
+		}
+
 	}
 
 		final MapChangeListener<String, CollectionEntry> collectionMapChangeListener = new MapChangeListener<String, CollectionEntry>() {
@@ -170,8 +186,8 @@ public class collectionTrackerEntry implements collectionTracker {
 	}
 	
 	@Override
-	public void saveCollection(String collectionName, ItemState state, String itemDescription) {
-		CollectionEntry entry = getItem(collectionName);
+	public void saveCollection(String itemName, ItemState state, String itemDescription) {
+		CollectionEntry entry = getItem(itemName);
 		entry.setItemDescription(itemDescription);
 		entry.setItemState(state);
 	}

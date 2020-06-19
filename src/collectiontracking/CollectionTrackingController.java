@@ -2,13 +2,9 @@ package collectiontracking;
 
 import collectiontracking.model.collectionList;
 import collectiontracking.model.collectionList.ItemState;
-import issuetrackinglite.IssueTrackingLiteController.DetailsData;
-import issuetrackinglite.IssueTrackingLiteController.SaveState;
-import issuetrackinglite.model.Issue;
-import issuetrackinglite.model.ObservableIssue;
-import issuetrackinglite.model.Issue.IssueStatus;
 import collectiontracking.model.ObservableCollectionItem;
 import collectiontracking.model.collectionTracker;
+import collectiontracking.model.collectionTrackerEntry;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +29,7 @@ import javafx.scene.layout.AnchorPane;
 
 public class CollectionTrackingController {
 	@FXML //ResourceBundle for CollectionTracker given to the FXMLLoader
-	private ResourceBundle collectionResources;
+	private ResourceBundle resources;
 	
 	@FXML //URL Location of the FXML file that was given to the FXMLLoader
 	private URL location;
@@ -44,8 +40,11 @@ public class CollectionTrackingController {
 	@FXML //fx:id="colItemState"
 	private TableColumn<ObservableCollectionItem, ItemState> colItemState;
 	
-	@FXML //fx:id="collectionList"
-	private ListView<String> collectionList;
+	@FXML //fx:id="colCollectionName"
+	private TableColumn<ObservableCollectionItem, ItemState> colItemDescription;
+	
+	@FXML //fx:id="collectionName"
+	private ListView<String> collectionName;
 	
 	@FXML //fx:id="newItem"
 	private Button newItem;
@@ -65,8 +64,8 @@ public class CollectionTrackingController {
 	@FXML //fx:id="displayedItemLabel"
 	private Label displayedItemLabel;
 	
-	@FXML //fx:id="itemName"
-	private TextField itemNameTextField;
+	@FXML //fx:id="itemDescTextField"
+	private TextField itemDescTextField;
 	
 	@FXML //fx:id="itemTable"
 	private TableView<ObservableCollectionItem> itemTable;
@@ -82,15 +81,15 @@ public class CollectionTrackingController {
 	void initialize() {
 		assert colItemName != null : "fx:id=\"colItemName\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert colItemState != null : "fx:id=\"colItemState\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert colItemName != null : "fx:id=\"colItemName\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert collectionList != null : "fx:id=\"collectionList\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
+		assert colItemDescription != null : "fx:id=\"colItemDescription\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
+		assert collectionName != null : "fx:id=\"collectionName\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert newItem != null : "fx:id=\"newItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert deleteItem != null : "fx:id=\"deleteItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert saveItem != null : "fx:id=\"saveItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert itemDescription != null : "fx:id=\"itemDescription\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert descriptionArea != null : "fx:id=\"descriptionArea\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert displayedItemLabel != null : "fx:id=\"displayedItemLabel\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert itemNameTextField != null : "fx:id=\"itemNameTextField\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
+		assert itemDescTextField != null : "fx:id=\"itemDescTextField\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert itemTable != null : "fx:id=\"itemTable\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		
 		System.out.println(this.getClass().getSimpleName() + ".initialize");
@@ -98,9 +97,9 @@ public class CollectionTrackingController {
 		configureDetails();
 		configureTable();
 		connectToService();
-		if(collectionList != null) {
-			collectionList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-			collectionList.getSelectionModel().selectedItemProperty().addListener(collectionItemSelected);
+		if(collectionName != null) {
+			collectionName.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+			collectionName.getSelectionModel().selectedItemProperty().addListener(collectionItemSelected);
 			displayedCollectionNames.addListener(collectionNamesListener);
 		}
 	}
@@ -109,14 +108,91 @@ public class CollectionTrackingController {
 	@FXML
     void newItemFired(ActionEvent event) {
         final String selectedCollection = getSelectedCollection();
-        if (model != null && selectedProject != null) {
-            ObservableIssue issue = model.createIssueFor(selectedProject);
-            if (table != null) {
+        if (model != null && selectedCollection != null) {
+            ObservableCollectionItem item = model.createItemFor(selectedCollection);
+            if (itemTable != null) {
                 // Select the newly created issue.
-                table.getSelectionModel().clearSelection();
-                table.getSelectionModel().select(issue);
+            	itemTable.getSelectionModel().clearSelection();
+            	itemTable.getSelectionModel().select(item);
             }
         }
+    }
+	
+	@FXML
+	void deleteItemFired(ActionEvent event) {
+		final String selectedCollection = getSelectedCollection();
+		if (model != null && selectedCollection != null && itemTable != null) {
+			final List<?> selectedItem = new ArrayList<>(itemTable.getSelectionModel().getSelectedItems());
+            for (Object o : selectedItem) {
+                if (o instanceof ObservableCollectionItem) {
+                    model.deleteCollectionItem(((ObservableCollectionItem) o).getItemName());
+                }
+            }
+            itemTable.getSelectionModel().clearSelection();
+		}
+	}
+	
+	@FXML
+	void saveItemFired(ActionEvent event) {
+		final ObservableCollectionItem ref = getSelectedItem();
+        final collectionList edited = new DetailsData();
+        itemSaveState saveState = computeItemSaveState(edited, ref);
+        if (saveState == itemSaveState.UNSAVED) {
+            model.saveCollection(ref.getItemName(), edited.getItemState(),
+                     edited.getItemDescription());
+        }
+        int selectedRowIndex = itemTable.getSelectionModel().getSelectedIndex();
+        itemTable.getItems().clear();
+        displayedItems = model.getItemNames(getSelectedCollection());
+        for (String id : displayedItems) {
+            final ObservableCollectionItem item = model.getItem(id);
+            itemTable.getItems().add(item);
+        }
+        itemTable.getSelectionModel().select(selectedRowIndex);
+
+        updateSaveItemButtonState();
+        
+	}
+	
+	private void connectToService() {
+        if (model == null) {
+            model = new collectionTrackerEntry();
+            displayedCollectionNames = model.getCollectionName(displayedCollectionName);
+        }
+        collectionsView.clear();
+        List<String> sortedCollections = new ArrayList<>(displayedCollectionNames);
+        Collections.sort(sortedCollections);
+        collectionsView.addAll(sortedCollections);
+        collectionName.setItems(collectionsView);
+    }
+	private static enum itemSaveState{
+		INVALID, UNSAVED, UNCHANGED
+	}
+	
+	private itemSaveState computeItemSaveState(collectionList edited, collectionList item) {
+        try {
+            // These fields are not editable - so if they differ they are invalid
+            // and we cannot save.
+            if (!equal(edited.getItemName(), item.getItemName())) {
+                return itemSaveState.INVALID;
+            }
+            if (!equal(edited.getCollectionName(), item.getCollectionName())) {
+                return itemSaveState.INVALID;
+            }
+
+            // If these fields differ, the issue needs saving.
+            if (!equal(edited.getItemState(), item.getItemState())) {
+                return itemSaveState.UNSAVED;
+            }
+            if (!equal(edited.getItemDescription(), item.getItemDescription())) {
+                return itemSaveState.UNSAVED;
+            }
+        } catch (Exception x) {
+            // If there's an exception, some fields are invalid.
+            return itemSaveState.INVALID;
+        }
+        // No field is invalid, no field needs saving.
+        return itemSaveState.UNCHANGED;
     }
 	
 	private void toggleButtons() {
@@ -147,7 +223,7 @@ public class CollectionTrackingController {
                 @Override
                 public void onChanged(Change<? extends ObservableCollectionItem> c) {
                     updateDeleteItemButtonState();
-                    updateBugDetails();
+                    updateItemDetails();
                     updateSaveItemButtonState();
                 }
             };
@@ -168,6 +244,35 @@ public class CollectionTrackingController {
             if (deleteItem != null) {
                 deleteItem.setDisable(true);
             }
+        }
+    }
+    
+    private void updateItemDetails() {
+        final ObservableCollectionItem selectedItem = getSelectedItem();
+        if (descriptionArea != null && selectedItem != null) {
+            if (displayedItemLabel != null) {
+                displayedItemName = selectedItem.getItemName();
+                displayedCollectionName = selectedItem.getCollectionName();
+                displayedItemLabel.setText( displayedItemName + " / " + displayedCollectionName );
+            }
+            if (itemDescTextField != null) {
+            	itemDescTextField.setText(nonNull(selectedItem.getItemDescTextField()));
+            }
+            if (itemStateValue != null) {
+            	itemStateValue.setText(selectedItem.getItemState().toString());
+            }
+            if (itemDescription != null) {
+            	itemDescription.selectAll();
+            	itemDescription.cut();
+            	itemDescription.setText(selectedItem.getItemDescription());
+            }
+        } else {
+        	displayedItemLabel.setText("");
+        	displayedItemName = null;
+        	displayedCollectionName = null;
+        }
+        if (descriptionArea != null) {
+        	descriptionArea.setVisible(selectedItem != null);
         }
     }
     
@@ -230,11 +335,40 @@ public class CollectionTrackingController {
             disable = nothingSelected;
         }
         if (disable == false) {
-            disable = computeSaveState(new DetailsData(), getSelectedItem()) != SaveState.UNSAVED;
+            disable = computeItemSaveState(new DetailsData(), getSelectedItem()) != itemSaveState.UNSAVED;
         }
         if (saveItem != null) {
             saveItem.setDisable(disable);
         }
+    }
+    
+    private void configureTable() {
+        colItemName.setCellValueFactory(new PropertyValueFactory<>("item name"));
+        colItemDescription.setCellValueFactory(new PropertyValueFactory<>("item description"));
+        colItemState.setCellValueFactory(new PropertyValueFactory<>("item state"));
+
+        // In order to limit the amount of setup in Getting Started we set the width
+        // of the 3 columns programmatically but one can do it from SceneBuilder.
+        colItemName.setPrefWidth(75);
+        colItemState.setPrefWidth(75);
+        colItemDescription.setPrefWidth(443);
+
+        colItemName.setMinWidth(75);
+        colItemState.setMinWidth(75);
+        colItemDescription.setMinWidth(443);
+
+        colItemName.setMaxWidth(750);
+        colItemState.setMaxWidth(750);
+        colItemDescription.setMaxWidth(4430);
+
+        itemTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        itemTable.setItems(tableContent);
+        assert itemTable.getItems() == tableContent;
+
+        final ObservableList<ObservableCollectionItem> tableSelection = itemTable.getSelectionModel().getSelectedItems();
+
+        tableSelection.addListener(tableSelectionChanged);
     }
     
     private final class DetailsData implements collectionList {
@@ -255,12 +389,20 @@ public class CollectionTrackingController {
             return ItemState.valueOf(itemStateValue.getText().trim());
         }
         
+        
+        public String getItemDescTextField() {
+        	if(itemDescTextField == null || isEmpty(itemDescTextField.getText())) {
+        		return "";
+        	}
+        	return itemDescTextField.getText();
+        }
+        
         @Override
         public String getCollectionName() {
             if (displayedCollectionName == null || isEmpty(displayedItemLabel.getText())) {
                 return null;
             }
-            return displayedItemName;
+            return displayedCollectionName;
         }
 
         @Override
@@ -292,8 +434,8 @@ public class CollectionTrackingController {
     }
     
     public String getSelectedCollection() {
-        if (model != null && collectionList != null) {
-            final ObservableList<String> selectedCollectionItem = collectionList.getSelectionModel().getSelectedItems();
+        if (model != null && collectionName != null) {
+            final ObservableList<String> selectedCollectionItem = collectionName.getSelectionModel().getSelectedItems();
             final String selectedCollection = selectedCollectionItem.get(0);
             return selectedCollection;
         }
@@ -311,6 +453,24 @@ public class CollectionTrackingController {
         return null;
     }
     
+    private void configureDetails() {
+        if (descriptionArea != null) {
+        	descriptionArea.setVisible(false);
+        }
+
+        if (descriptionArea != null) {
+        	descriptionArea.addEventFilter(EventType.ROOT, new EventHandler<Event>() {
+
+                @Override
+                public void handle(Event event) {
+                    if (event.getEventType() == MouseEvent.MOUSE_RELEASED
+                            || event.getEventType() == KeyEvent.KEY_RELEASED) {
+                        updateSaveItemButtonState();
+                    }
+                }
+            });
+        }
+    }
 	
     private final ListChangeListener<String> collectionItemListener = new ListChangeListener<String>() {
     	@Override
