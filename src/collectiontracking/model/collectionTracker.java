@@ -4,12 +4,10 @@ import collectiontracking.model.collectionList.ItemState;
 import javafx.collections.ObservableList;
 
 public interface collectionTracker {
-
-	//public ObservableList<String> getCollectionName(String collectionName);
-	public ObservableList<String> getItemNames(String itemName);
-	public ObservableList<String> getCollectionName(String collectionName);
+	public ObservableList<String> getItemNames(String collectionName);
+	public ObservableList<String> getCollectionNames();
 	public ObservableCollectionItem getItem(String item);
 	public ObservableCollectionItem createItemFor(String collectionName);
-	public void deleteCollectionItem(String collectionName);
-	public void saveCollection(String collectionName, ItemState state, String itemDescription);
+	public void deleteCollectionItem(String itemName);
+	public void saveCollection(String itemName, ItemState state, String gameOfOrigin, String description);
 }

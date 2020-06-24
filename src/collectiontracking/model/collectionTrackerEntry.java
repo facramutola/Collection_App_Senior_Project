@@ -1,7 +1,6 @@
 package collectiontracking.model;
 
 import collectiontracking.model.collectionList.ItemState;
-import collectiontracking.model.ObservableCollectionItem;
 //import collectiontracking.model.Issue.IssueStatus;
 //import collectiontracking.model.collectionTrackerEntry.CollectionEntry;
 
@@ -48,110 +47,104 @@ public class collectionTrackerEntry implements collectionTracker {
 	}
 
 	public final class CollectionEntry implements ObservableCollectionItem {
-		private final SimpleStringProperty collectionName;
 		private final SimpleStringProperty itemName;
-		private final SimpleStringProperty itemDescTextField;
-		private final SimpleObjectProperty<ItemState> itemState = new SimpleObjectProperty<>(ItemState.DO_NOT_HAVE);
+		private final SimpleStringProperty collectionName;
+		private final SimpleStringProperty origin;
 		private final SimpleStringProperty itemDescription;
+		private final SimpleObjectProperty<ItemState> itemState = new SimpleObjectProperty<>(ItemState.HAVE);
 
-		CollectionEntry(String collectionName, String itemName){
-			this(collectionName, itemName, null);
+		CollectionEntry(String collectionName, String entryNum){
+		 this(collectionName, entryNum, null);
 		}
-		
-		CollectionEntry(String itemName, String collectionName, String itemDescTextField) {
-			assert !collectionNames.contains(itemName);
-			assert !collectionsMap.get(itemName).contains(collectionName);
+
+		CollectionEntry(String collectionName, String itemName, String origin) {
+			assert collectionNames.contains(collectionName);
+			assert !collectionsMap.get(collectionName).contains(itemName);
 			assert !itemsMap.containsKey(itemName);
 			this.collectionName = new SimpleStringProperty(collectionName);
 			this.itemName = new SimpleStringProperty(itemName);
-			this.itemDescTextField = new SimpleStringProperty(itemDescTextField);
+			this.origin = new SimpleStringProperty(origin);
 			this.itemDescription = new SimpleStringProperty("");
 		}
 
-		@Override
-		public ItemState getItemState() {
-			return itemState.get();
-		}
-		
-		public String getCollectionName() {
-			return collectionName.get();
-		}
-
-		private void setCollectionName(String collectionName) {
-			this.collectionName.set(collectionName);
-		}
-
-		@Override
-		public String getItemName() {
-			return itemName.get();
-		}
-
-		@Override
-		public String getItemDescription() {
-			return itemDescription.get();
-		}
-
-		@Override
-		public ObservableValue<String> collectionNameProperty() {
-			return collectionName;
-		}
-
-		@Override
-		public ObservableValue<String> itemNameProperty() {
-			return itemName;
-		}
-
-		@Override
-		public ObservableValue<String> itemDescriptionProperty() {
-			return itemDescription;
-		}
-
-		@Override
-		public ObservableValue<ItemState> itemStateProperty() {
-			return itemState;
-		}
-
-
-		@Override
-		public void setItemName(String string) {
-			this.itemName.set(string);
-		}
-
-		@Override
-		public void setItemDescription(String string) {
-			this.itemDescription.set(string);
-		}
-
-		@Override
-		public void setItemState(ItemState HAVE) {
-			this.itemState.set(HAVE);
-		}
-
-		private void setItemDescTextField(String itemDescTextField) {
-			this.itemDescTextField.set(itemDescTextField);
-		}
-		
-		@Override
-		public String getItemDescTextField() {
-			// TODO Auto-generated method stub
-			return itemDescTextField.get();
-		}
-
 	}
+	@Override
+	public ItemState getItemState() {
+		return itemState.get();
+	}
+	
+	@Override
+	public String getItemName() {
+		return itemName.get();
+	}
+	
+	@Override
+	public String getCollectionName() {
+		return collectionName.get();
+	}
+	
+	@Override
+	public String getGameOfOrigin() {
+		return origin.get();
+	}
+	
+	private void setGameOfOrigin(String origin) {
+		this.origin.set(origin);
+	}
+	
+	@Override
+	public String getItemDescription(){
+		return itemDescription.get();
+	}
+	
+	private void setItemDescription(String itemDescription) {
+		this.itemDescription.set(itemDescription);
+	}
+	
+	private void setItemState(ItemState itemState) {
+		this.itemState.set(itemState);
+	}
+	
+	@Override
+	public ObservableValue<String> itemNameProperty(){
+		return itemName;
+	}
+	
+	@Override
+	public ObservableValue<String> collectionNameProperty(){
+		return collectionName;
+	}
+	
+	@Override
+	public ObservableValue<ItemState> itemStateProperty(){
+		return itemState;
+	}
+	
+	@Override
+	public ObservableValue<String> gameOfOriginProperty(){
+		return origin;
+	}
+	
+	@Override
+	public ObservableValue<String> itemDescriptionProperty(){
+		return itemDescription;
+	}
+	
+	
 
-		final MapChangeListener<String, CollectionEntry> collectionMapChangeListener = new MapChangeListener<String, CollectionEntry>() {
-			@Override
-			public void onChanged(Change<? extends String, ? extends CollectionEntry> change) {
-				if (change.wasAdded()) {
-					final CollectionEntry val = change.getValueAdded();
-					collectionsMap.get(val.getCollectionName()).add(val.getItemName());
-				}
-				if (change.wasRemoved()) {
-					final CollectionEntry val = change.getValueRemoved();
-					collectionsMap.get(val.getCollectionName()).remove(val.getItemName());
-				}
+	final MapChangeListener<String, CollectionEntry> collectionMapChangeListener = new MapChangeListener<String, CollectionEntry>() {
+		@Override
+		public void onChanged(Change<? extends String, ? extends CollectionEntry> change) {
+			if (change.wasAdded()) {
+				final CollectionEntry val = change.getValueAdded();
+				collectionsMap.get(val.getCollectionName()).add(val.getItemName());
 			}
-		};
+			if (change.wasRemoved()) {
+				final CollectionEntry val = change.getValueRemoved();
+				collectionsMap.get(val.getCollectionName()).remove(val.getItemName());
+			}
+		}
+	};
 
 	private static <T> List<T> newList(T... items) {
 		return Arrays.asList(items);
@@ -161,13 +154,18 @@ public class collectionTrackerEntry implements collectionTracker {
 		final Map<String, CollectionEntry> testMap = new TreeMap<>();
 		itemsMap = FXCollections.observableMap(testMap);
 		itemsMap.addListener(collectionMapChangeListener);
-		ObservableCollectionItem persona;
+		CollectionEntry persona;
 		persona = createItemFor("Jack Frost Personas");
 		persona.setItemName("Jack Frost");
-		persona.setItemDescription("A winter fairy of European descent. He leaves ice patterns on windows and nips people's noses. Though normally an innocent creature, he will freeze his victims to death if provoked.");
-		persona.setItemState(ItemState.HAVE);
+		persona.setItemDescTextArea("A winter fairy of European descent. He leaves ice patterns on windows and nips people's noses. Though normally an innocent creature, he will freeze his victims to death if provoked.");
+		//persona.setItemState(ItemState.HAVE);
+		
+		persona	= createItemFor("Cryptid and Mythology Personas");
+		persona.setItemName("Mothman");
+		persona.setItemDescTextArea("A cryptid sighted during the 60s-80s in West Virginia. It has shining red eyes and is named for the fin-like appendages on its sides. It uses its keen sense for blood to track down the source and feed on it.");
+		//persona.setItemState(ItemState.HAVE);
 	}
-	
+
 	public void deleteCollectionItem(String collectionItem) {
 		assert itemsMap.containsKey(collectionItem);
 		itemsMap.remove(collectionItem);
@@ -184,28 +182,27 @@ public class collectionTrackerEntry implements collectionTracker {
 	public ObservableList<String> getItemNames(String itemNames) {
 		return collectionsMap.get(itemNames);
 	}
-	
+
 	@Override
 	public void saveCollection(String itemName, ItemState state, String itemDescription) {
 		CollectionEntry entry = getItem(itemName);
-		entry.setItemDescription(itemDescription);
+		entry.setItemDescTextArea(itemDescription);
 		entry.setItemState(state);
 	}
 
 	@Override
-	public ObservableCollectionItem createItemFor(String collectionName) {
+	public CollectionEntry createItemFor(String collectionName) {
 		assert collectionNames.contains(collectionName);
-		final CollectionEntry entry = new CollectionEntry(collectionName, "");
+		final CollectionEntry entry = new CollectionEntry(collectionName, collectionName, collectionName);
 		assert itemsMap.containsKey(entry.getCollectionName()) == false;
 		itemsMap.put(entry.getCollectionName(), entry);
 		return entry;
 	}
 
-	public ObservableList<String> getCollectionName(String collectionName) {
-		return collectionsMap.get(collectionName);
+	@Override
+	public ObservableList<String> getCollectionNames() {
+		// TODO Auto-generated method stub
+		return collectionNames;
 	}
 
-
-
 }
-	

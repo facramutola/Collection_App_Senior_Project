@@ -6,9 +6,9 @@ public interface collectionList {
 		HAVE, DO_NOT_HAVE
 	}
 
-	public String getCollectionName();
 	public String getItemName();
+	public String getCollectionName();
+	public String getGameOfOrigin();
 	public ItemState getItemState();
-	public String getItemDescTextField();
 	public String getItemDescription();
 }
