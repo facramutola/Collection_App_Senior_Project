@@ -67,68 +67,74 @@ public class collectionTrackerEntry implements collectionTracker {
 			this.itemDescription = new SimpleStringProperty("");
 		}
 
-	}
-	@Override
-	public ItemState getItemState() {
-		return itemState.get();
+		@Override
+		public String getItemName() {
+			return itemName.get();
+		}
+		
+		private void setItemName(String itemName) {
+			this.itemName.set(itemName);
+		}
+
+		@Override
+		public String getCollectionName() {
+			return collectionName.get();
+		}
+
+		@Override
+		public String getGameOfOrigin() {
+			return origin.get();
+		}
+		
+		private void setGameOfOrigin(String origin) {
+			this.origin.set(origin);
+		}
+
+		@Override
+		public ItemState getItemState() {
+			return itemState.get();
+		}
+		
+		private void setItemState(ItemState itemState) {
+			this.itemState.set(itemState);
+		}
+
+		@Override
+		public String getItemDescription() {
+			return itemDescription.get();
+		}
+		
+		private void setItemDescription(String itemDescription) {
+			this.itemDescription.set(itemDescription);
+		}
+
+		@Override
+		public ObservableValue<String> itemNameProperty() {
+			return itemName;
+		}
+
+		@Override
+		public ObservableValue<String> collectionNameProperty() {
+			return collectionName;
+		}
+
+		@Override
+		public ObservableValue<String> gameOfOriginProperty() {
+			return origin;
+		}
+
+		@Override
+		public ObservableValue<ItemState> itemStateProperty() {
+			return itemState;
+		}
+
+		@Override
+		public ObservableValue<String> itemDescriptionProperty() {
+			return itemDescription;
+		}
+
 	}
 	
-	@Override
-	public String getItemName() {
-		return itemName.get();
-	}
-	
-	@Override
-	public String getCollectionName() {
-		return collectionName.get();
-	}
-	
-	@Override
-	public String getGameOfOrigin() {
-		return origin.get();
-	}
-	
-	private void setGameOfOrigin(String origin) {
-		this.origin.set(origin);
-	}
-	
-	@Override
-	public String getItemDescription(){
-		return itemDescription.get();
-	}
-	
-	private void setItemDescription(String itemDescription) {
-		this.itemDescription.set(itemDescription);
-	}
-	
-	private void setItemState(ItemState itemState) {
-		this.itemState.set(itemState);
-	}
-	
-	@Override
-	public ObservableValue<String> itemNameProperty(){
-		return itemName;
-	}
-	
-	@Override
-	public ObservableValue<String> collectionNameProperty(){
-		return collectionName;
-	}
-	
-	@Override
-	public ObservableValue<ItemState> itemStateProperty(){
-		return itemState;
-	}
-	
-	@Override
-	public ObservableValue<String> gameOfOriginProperty(){
-		return origin;
-	}
-	
-	@Override
-	public ObservableValue<String> itemDescriptionProperty(){
-		return itemDescription;
-	}
 	
 	
 
@@ -157,52 +163,55 @@ public class collectionTrackerEntry implements collectionTracker {
 		CollectionEntry persona;
 		persona = createItemFor("Jack Frost Personas");
 		persona.setItemName("Jack Frost");
-		persona.setItemDescTextArea("A winter fairy of European descent. He leaves ice patterns on windows and nips people's noses. Though normally an innocent creature, he will freeze his victims to death if provoked.");
+		persona.setItemDescription("A winter fairy of European descent. He leaves ice patterns on windows and nips people's noses. Though normally an innocent creature, he will freeze his victims to death if provoked.");
+		persona.setGameOfOrigin("Megami Tensei II");
 		//persona.setItemState(ItemState.HAVE);
 		
 		persona	= createItemFor("Cryptid and Mythology Personas");
 		persona.setItemName("Mothman");
-		persona.setItemDescTextArea("A cryptid sighted during the 60s-80s in West Virginia. It has shining red eyes and is named for the fin-like appendages on its sides. It uses its keen sense for blood to track down the source and feed on it.");
+		persona.setItemDescription("A cryptid sighted during the 60s-80s in West Virginia. It has shining red eyes and is named for the fin-like appendages on its sides. It uses its keen sense for blood to track down the source and feed on it.");
+		persona.setGameOfOrigin("Shin Megami Tensei III: Nocturne");
 		//persona.setItemState(ItemState.HAVE);
 	}
 
+	@Override
 	public void deleteCollectionItem(String collectionItem) {
 		assert itemsMap.containsKey(collectionItem);
 		itemsMap.remove(collectionItem);
 	}
 
-	public ObservableList<String> getCollectionName() {
-		return collectionNames;
-	}
 
+	@Override
 	public CollectionEntry getItem(String itemName) {
 		return itemsMap.get(itemName);
 	}
 
+	@Override
 	public ObservableList<String> getItemNames(String itemNames) {
 		return collectionsMap.get(itemNames);
-	}
-
-	@Override
-	public void saveCollection(String itemName, ItemState state, String itemDescription) {
-		CollectionEntry entry = getItem(itemName);
-		entry.setItemDescTextArea(itemDescription);
-		entry.setItemState(state);
 	}
 
 	@Override
 	public CollectionEntry createItemFor(String collectionName) {
 		assert collectionNames.contains(collectionName);
 		final CollectionEntry entry = new CollectionEntry(collectionName, collectionName, collectionName);
-		assert itemsMap.containsKey(entry.getCollectionName()) == false;
-		itemsMap.put(entry.getCollectionName(), entry);
+		assert itemsMap.containsKey(entry.getItemName()) == false;
+		assert collectionsMap.get(collectionName).contains(entry.getItemName()) == false;
+		itemsMap.put(entry.getItemName(), entry);
 		return entry;
 	}
 
 	@Override
 	public ObservableList<String> getCollectionNames() {
-		// TODO Auto-generated method stub
 		return collectionNames;
+	}
+
+	@Override
+	public void saveCollection(String itemName, ItemState state, String gameOfOrigin, String itemDescription) {
+		CollectionEntry entry = getItem(itemName);
+		entry.setItemDescription(itemDescription);
+		entry.setGameOfOrigin(gameOfOrigin);
+		entry.setItemState(state);
 	}
 
 }

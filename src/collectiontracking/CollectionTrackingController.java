@@ -40,8 +40,8 @@ public class CollectionTrackingController {
 	@FXML // fx:id="colItemState"
 	private TableColumn<ObservableCollectionItem, ItemState> colItemState;
 
-	@FXML // fx:id="colCollectionName"
-	private TableColumn<ObservableCollectionItem, ItemState> colItemDescription;
+	@FXML // fx:id="colGameOfOrigin"
+	private TableColumn<ObservableCollectionItem, ItemState> colGameOfOrigin;
 
 	@FXML // fx:id="collectionName"
 	private ListView<String> collectionName;
@@ -61,6 +61,12 @@ public class CollectionTrackingController {
 	@FXML // fx:id="itemDescTextArea"
 	private TextArea itemDescTextArea;
 
+	@FXML // fx:id="gameOfOrigin"
+	private TextField gameOfOrigin;
+
+	@FXML // fx:id="displayedItemLabel"
+	private Label displayedItemLabel;
+
 	@FXML // fx:id="itemTable"
 	private TableView<ObservableCollectionItem> itemTable;
 
@@ -74,13 +80,15 @@ public class CollectionTrackingController {
 	void initialize() {
 		assert colItemName != null : "fx:id=\"colItemName\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert colItemState != null : "fx:id=\"colItemState\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert colItemDescription != null : "fx:id=\"colItemDescription\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
+		assert colGameOfOrigin != null : "fx:id=\"colGameOfOrigin\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert collectionName != null : "fx:id=\"collectionName\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert newItem != null : "fx:id=\"newItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert deleteItem != null : "fx:id=\"deleteItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert saveItem != null : "fx:id=\"saveItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
+		assert gameOfOrigin != null : "fx:id=\"gameOfOrigin\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert descriptionArea != null : "fx:id=\"descriptionArea\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert itemDescTextArea != null : "fx:id=\"itemDescTextArea\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
+		assert displayedItemLabel != null : "fx:id=\"displayedItemLabel\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 		assert itemTable != null : "fx:id=\"itemTable\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
 
 		System.out.println(this.getClass().getSimpleName() + ".initialize");
@@ -128,7 +136,8 @@ public class CollectionTrackingController {
 		final collectionList edited = new DetailsData();
 		itemSaveState saveState = computeItemSaveState(edited, ref);
 		if (saveState == itemSaveState.UNSAVED) {
-			model.saveCollection(ref.getItemName(), edited.getItemState(), edited.getItemDescTextArea());
+			model.saveCollection(ref.getItemName(), edited.getItemState(), edited.getGameOfOrigin(),
+					edited.getItemDescription());
 		}
 		int selectedRowIndex = itemTable.getSelectionModel().getSelectedIndex();
 		itemTable.getItems().clear();
@@ -154,9 +163,9 @@ public class CollectionTrackingController {
 			saveItem.setDisable(true);
 		}
 	}
-	
+
 	private ObservableList<String> displayedCollectionNames;
-	
+
 	private ObservableList<String> displayedItems;
 
 	private final ListChangeListener<String> collectionNamesListener = new ListChangeListener<String>() {
@@ -180,7 +189,7 @@ public class CollectionTrackingController {
 			FXCollections.sort(collectionsView);
 		}
 	};
-	
+
 	private final ListChangeListener<String> collectionItemListener = new ListChangeListener<String>() {
 		@Override
 		public void onChanged(Change<? extends String> c) {
@@ -222,7 +231,7 @@ public class CollectionTrackingController {
 		collectionsView.addAll(sortedCollections);
 		collectionName.setItems(collectionsView);
 	}
-	
+
 	private final ListChangeListener<ObservableCollectionItem> tableSelectionChanged = new ListChangeListener<ObservableCollectionItem>() {
 
 		@Override
@@ -232,29 +241,41 @@ public class CollectionTrackingController {
 			updateSaveItemButtonState();
 		}
 	};
-	
+
 	private static String nonNull(String s) {
 		return s == null ? "" : s;
 	}
-	
+
 	private void updateItemDetails() {
 		final ObservableCollectionItem selectedItem = getSelectedItem();
 		if (descriptionArea != null && selectedItem != null) {
-			if (itemDescTextArea != null) {
-				itemDescTextArea.setText(nonNull(selectedItem.getItemDescTextArea()));
+			if (displayedItemLabel != null) {
+				displayedItemName = selectedItem.getItemName();
+				displayedCollectionName = selectedItem.getCollectionName();
+				displayedItemLabel.setText(displayedCollectionName + "/" + displayedItemName + ":");
+			}
+			if (gameOfOrigin != null) {
+				gameOfOrigin.setText(nonNull(selectedItem.getGameOfOrigin()));
 			}
 			if (itemStateValue != null) {
 				itemStateValue.setText(selectedItem.getItemState().toString());
 			}
-		} //else {
-			//displayedItemName = null;
-			//displayedCollectionName = null;
-		//}
-		if (descriptionArea != null) {
-			descriptionArea.setVisible(selectedItem != null);
+			if (itemDescTextArea != null) {
+				itemDescTextArea.selectAll();
+				itemDescTextArea.cut();
+				itemDescTextArea.setText(selectedItem.getItemDescription());
+			} else {
+				displayedItemLabel.setText("");
+				displayedItemName = null;
+				displayedCollectionName = null;
+			}
+			if (descriptionArea != null) {
+				descriptionArea.setVisible(selectedItem != null);
+			}
 		}
+
 	}
-	
+
 	private boolean isVoid(Object o) {
 		if (o instanceof String) {
 			return isEmpty((String) o);
@@ -277,12 +298,36 @@ public class CollectionTrackingController {
 	private static enum itemSaveState {
 		INVALID, UNSAVED, UNCHANGED
 	}
-	
+
 	private final class DetailsData implements collectionList {
 
 		@Override
+		public String getCollectionName() {
+			if (displayedCollectionName == null || isEmpty(displayedItemLabel.getText())) {
+				return null;
+			}
+			return displayedCollectionName;
+		}
+
+		@Override
+		public String getGameOfOrigin() {
+			if (gameOfOrigin == null || isEmpty(gameOfOrigin.getText())) {
+				return "";
+			}
+			return gameOfOrigin.getText();
+		}
+
+		@Override
+		public String getItemDescription() {
+			if(itemDescTextArea == null || isEmpty(itemDescTextArea.getText())) {
+				return "";
+			}
+			return itemDescTextArea.getText();
+		}
+
+		@Override
 		public String getItemName() {
-			if (displayedItemName == null) {
+			if (displayedItemName == null || isEmpty(displayedItemLabel.getText())) {
 				return null;
 			}
 			return displayedItemName;
@@ -295,57 +340,28 @@ public class CollectionTrackingController {
 			}
 			return ItemState.valueOf(itemStateValue.getText().trim());
 		}
-
-		// public String getItemDescTextField() {
-		// if(itemDescTextArea == null || isEmpty(itemDescTextArea.getText())) {
-		// return "";
-		// }
-		// return itemDescTextArea.getText();
-		// }
-
-		@Override
-		public String getCollectionNames() {
-			if (displayedCollectionNames == null) {
-				return null;
-			}
-			return displayedCollectionName;
-		}
-
-		@Override
-		public String getItemDescTextArea() {
-			if (itemDescTextArea == null || isEmpty(itemDescTextArea.getText())) {
-				return "";
-			}
-			return itemDescTextArea.getText();
-		}
 	}
 
 	private itemSaveState computeItemSaveState(collectionList edited, collectionList item) {
 		try {
-			// These fields are not editable - so if they differ they are invalid
-			// and we cannot save.
 			if (!equal(edited.getItemName(), item.getItemName())) {
 				return itemSaveState.INVALID;
 			}
-			if (!equal(edited.getCollectionNames(), item.getCollectionNames())) {
+			if (!equal(edited.getCollectionName(), item.getCollectionName())) {
 				return itemSaveState.INVALID;
 			}
-
-			// If these fields differ, the issue needs saving.
 			if (!equal(edited.getItemState(), item.getItemState())) {
 				return itemSaveState.UNSAVED;
 			}
-			if (!equal(edited.getItemDescTextArea(), item.getItemDescTextArea())) {
+			if (!equal(edited.getItemDescription(), item.getItemDescription())) {
 				return itemSaveState.UNSAVED;
 			}
 		} catch (Exception x) {
-			// If there's an exception, some fields are invalid.
 			return itemSaveState.INVALID;
 		}
-		// No field is invalid, no field needs saving.
 		return itemSaveState.UNCHANGED;
 	}
-	
+
 	private void updateDeleteItemButtonState() {
 		boolean disable = true;
 		if (deleteItem != null && itemTable != null) {
@@ -370,25 +386,25 @@ public class CollectionTrackingController {
 			saveItem.setDisable(disable);
 		}
 	}
-	
+
 	private void configureTable() {
 		colItemName.setCellValueFactory(new PropertyValueFactory<>("item name"));
-		colItemDescription.setCellValueFactory(new PropertyValueFactory<>("item description"));
+		colGameOfOrigin.setCellValueFactory(new PropertyValueFactory<>("item description"));
 		colItemState.setCellValueFactory(new PropertyValueFactory<>("item state"));
 
 		// In order to limit the amount of setup in Getting Started we set the width
 		// of the 3 columns programmatically but one can do it from SceneBuilder.
 		colItemName.setPrefWidth(75);
 		colItemState.setPrefWidth(75);
-		colItemDescription.setPrefWidth(443);
+		colGameOfOrigin.setPrefWidth(443);
 
 		colItemName.setMinWidth(75);
 		colItemState.setMinWidth(75);
-		colItemDescription.setMinWidth(443);
+		colGameOfOrigin.setMinWidth(443);
 
 		colItemName.setMaxWidth(750);
 		colItemState.setMaxWidth(750);
-		colItemDescription.setMaxWidth(4430);
+		colGameOfOrigin.setMaxWidth(4430);
 
 		itemTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
@@ -400,7 +416,7 @@ public class CollectionTrackingController {
 
 		tableSelection.addListener(tableSelectionChanged);
 	}
-	
+
 	public String getSelectedCollection() {
 		if (model != null && collectionName != null) {
 			final ObservableList<String> selectedCollectionItem = collectionName.getSelectionModel().getSelectedItems();
@@ -480,5 +496,4 @@ public class CollectionTrackingController {
 		}
 	}
 
-	
 }
