@@ -1,5 +1,6 @@
 package collectiontracking;
 
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -8,12 +9,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.VBox;
 import javafx.scene.Scene;
 
-public class Main extends Application {
 
+public class Main extends Application {
 	public static void main(String[] args) {
 		Application.launch(Main.class, (java.lang.String[]) null);
 	}
-
+	
 	@Override
 	public void start(Stage primaryStage) {
 		try {
@@ -22,8 +23,10 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.setTitle("Collection Tracking");
 			primaryStage.show();
-		} catch (Exception ex) {
+		}
+		catch(Exception ex) {
 			Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-}
+	}
+

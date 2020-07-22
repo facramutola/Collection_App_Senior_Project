@@ -14,8 +14,8 @@
             <HBox alignment="CENTER_RIGHT" spacing="15.0" HBox.hgrow="ALWAYS">
                <children>
                   <Button fx:id="newItem" mnemonicParsing="false" onAction="#newItemFired" text="New Item" />
-                  <Button fx:id="saveItem" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#saveItemFired" text="Save Item" />
-                  <Button fx:id="deleteItem" layoutX="74.0" layoutY="10.0" mnemonicParsing="false" onAction="#deleteItemFired" text="Delete Item" />
+                  <Button fx:id="saveCollectionItem" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#saveItemFired" text="Save Item" />
+                  <Button fx:id="deleteCollectionItem" layoutX="122.0" layoutY="10.0" mnemonicParsing="false" onAction="#deleteItemFired" text="Delete Item" />
                </children>
             </HBox>
          </children>
@@ -25,26 +25,26 @@
       </HBox>
       <SplitPane dividerPositions="0.25" VBox.vgrow="ALWAYS">
          <items>
-            <ListView fx:id="collectionName" SplitPane.resizableWithParent="false" />
+            <ListView fx:id="collectionList" SplitPane.resizableWithParent="false" />
             <SplitPane dividerPositions="0.35" orientation="VERTICAL">
               <items>
                   <TableView fx:id="itemTable">
                     <columns>
-                      <TableColumn fx:id="colItemName" prefWidth="131.0" text="Item Name" />
-                      <TableColumn fx:id="colItemState" prefWidth="81.0" text="Item State" />
-                        <TableColumn fx:id="colGameOfOrigin" prefWidth="124.0" text="Game Of Origin" />
+                      <TableColumn fx:id="colItemName" prefWidth="188.0" text="Item Name" />
+                      <TableColumn fx:id="colItemState" prefWidth="189.0" text="Item State" />
+                        <TableColumn fx:id="colGameOfOrigin" prefWidth="215.0" text="Origin" />
                     </columns>
                   </TableView>
                 <AnchorPane fx:id="descriptionArea">
                      <children>
-                        <HBox alignment="CENTER" layoutX="14.0" layoutY="10.0" spacing="10.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="20.995">
+                        <HBox alignment="CENTER" layoutX="14.0" layoutY="4.0" spacing="10.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="20.995">
                            <children>
-                              <Label fx:id="displayedItemLabel" layoutX="14.0" layoutY="14.0" minWidth="-Infinity" prefHeight="20.0" prefWidth="197.0" text="Collection Name / Item Name" />
-                              <TextField fx:id="gameOfOrigin" layoutX="103.0" layoutY="10.0" prefHeight="26.0" prefWidth="348.0" text="GAME OF ORIGIN" HBox.hgrow="ALWAYS" />
+                              <Label fx:id="displayedItemLabel" layoutX="14.0" layoutY="14.0" minWidth="-Infinity" text="ITEM/COLLECTION" />
+                              <TextField fx:id="gameOfOrigin" layoutX="279.0" layoutY="4.0" prefHeight="65.0" prefWidth="281.0" text="GAME OF ORIGIN" HBox.hgrow="ALWAYS" />
                            </children>
                         </HBox>
-                        <Label layoutX="14.0" layoutY="71.0" text="Item Description" />
-                        <TextArea fx:id="itemDescTextArea" layoutX="16.0" layoutY="93.0" prefHeight="280.0" prefWidth="561.0" AnchorPane.bottomAnchor="13.0" AnchorPane.leftAnchor="16.0" AnchorPane.rightAnchor="19.0" AnchorPane.topAnchor="93.0" />
+                        <Label layoutX="14.0" layoutY="94.0" text="Description" />
+                        <TextArea fx:id="itemDescTextArea" layoutX="14.0" layoutY="139.0" prefHeight="235.0" prefWidth="557.0" />
                      </children>
                   </AnchorPane>
               </items>

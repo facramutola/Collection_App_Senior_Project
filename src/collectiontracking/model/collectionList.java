@@ -1,6 +1,6 @@
 package collectiontracking.model;
 
-public interface collectionList {
+public interface CollectionList {
 	
 	public static enum ItemState{
 		HAVE, DO_NOT_HAVE

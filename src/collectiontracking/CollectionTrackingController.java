@@ -1,14 +1,14 @@
 package collectiontracking;
 
-import collectiontracking.model.collectionList;
-import collectiontracking.model.collectionList.ItemState;
+import collectiontracking.model.CollectionList;
+import collectiontracking.model.CollectionList.ItemState;
 import collectiontracking.model.ObservableCollectionItem;
 import collectiontracking.model.collectionTracker;
 import collectiontracking.model.collectionTrackerEntry;
 import java.net.URL;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -28,472 +28,504 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 
 public class CollectionTrackingController {
-	@FXML // ResourceBundle for CollectionTracker given to the FXMLLoader
-	private ResourceBundle resources;
+	@FXML // ResourceBundle that was given to the FXMLLoader
+    private ResourceBundle collectionResources;
 
-	@FXML // URL Location of the FXML file that was given to the FXMLLoader
-	private URL location;
+    @FXML // URL location of the FXML file that was given to the FXMLLoader
+    private URL location;
 
-	@FXML // fx:id="colItemName"
-	private TableColumn<ObservableCollectionItem, String> colItemName;
+    @FXML //  fx:id="colItemName"
+    private TableColumn<ObservableCollectionItem, String> colItemName; 
 
-	@FXML // fx:id="colItemState"
-	private TableColumn<ObservableCollectionItem, ItemState> colItemState;
+    @FXML //  fx:id="colItemState"
+    private TableColumn<ObservableCollectionItem, ItemState> colItemState; 
 
-	@FXML // fx:id="colGameOfOrigin"
-	private TableColumn<ObservableCollectionItem, ItemState> colGameOfOrigin;
+    @FXML //  fx:id="colGameOfOrigin"
+    private TableColumn<ObservableCollectionItem, String> colGameOfOrigin; 
 
-	@FXML // fx:id="collectionName"
-	private ListView<String> collectionName;
+    @FXML //  fx:id="deleteCollectionItem"
+    private Button deleteCollectionItem; 
 
-	@FXML // fx:id="newItem"
-	private Button newItem;
+    @FXML //  fx:id="itemDescTextArea"
+    private TextArea itemDescTextArea; 
 
-	@FXML // fx:id="deleteItem"
-	private Button deleteItem;
+    @FXML //  fx:id="descriptionArea"
+    private AnchorPane descriptionArea; 
 
-	@FXML // fx:id="saveItem"
-	private Button saveItem;
+    @FXML //  fx:id="displayedItemLabel"
+    private Label displayedItemLabel; 
 
-	@FXML // fx:id="descriptionArea"
-	private AnchorPane descriptionArea;
+    @FXML //  fx:id="collectionList"
+    private ListView<String> collectionList; 
 
-	@FXML // fx:id="itemDescTextArea"
-	private TextArea itemDescTextArea;
+    @FXML //  fx:id="newItem"
+    private Button newItem; 
 
-	@FXML // fx:id="gameOfOrigin"
-	private TextField gameOfOrigin;
+    @FXML //  fx:id="saveCollectionItem"
+    private Button saveCollectionItem; 
 
-	@FXML // fx:id="displayedItemLabel"
-	private Label displayedItemLabel;
+    @FXML //  fx:id="gameOfOrigin"
+    private TextField gameOfOrigin; 
 
-	@FXML // fx:id="itemTable"
-	private TableView<ObservableCollectionItem> itemTable;
+    @FXML //  fx:id="itemTable"
+    private TableView<ObservableCollectionItem> itemTable; 
 
-	private String displayedCollectionName;
-	private String displayedItemName;
-	ObservableList<String> collectionsView = FXCollections.observableArrayList();
-	collectionTracker model = null;
-	private TextField itemStateValue = new TextField();
-	final ObservableList<ObservableCollectionItem> tableContent = FXCollections.observableArrayList();
+    private String displayedItemName; 
+    private String displayedCollectionName;
+    ObservableList<String> collectionsView = FXCollections.observableArrayList();
+    collectionTracker model = null;
+    private TextField itemStateValue = new TextField();
+    final ObservableList<ObservableCollectionItem> itemTableContent = FXCollections.observableArrayList();
+    
+    /**
+     * Initializes the controller class.
+     */
+    @FXML 
+    void initialize() {
+        assert colItemName != null : "fx:id=\"colItemName\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert colItemState != null : "fx:id=\"colItemState\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert colGameOfOrigin != null : "fx:id=\"colGameOfOrigin\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert deleteCollectionItem != null : "fx:id=\"deleteCollectionItem\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert itemDescTextArea != null : "fx:id=\"itemDescTextArea\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert descriptionArea != null : "fx:id=\"descriptionArea\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert displayedItemLabel != null : "fx:id=\"displayedItemLabel\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert newItem != null : "fx:id=\"newItem\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert saveCollectionItem != null : "fx:id=\"saveCollectionItem\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert gameOfOrigin != null : "fx:id=\"gameOfOrigin\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert itemTable != null : "fx:id=\"itemTable\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert collectionList != null : "fx:id=\"collectionList\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        
+        System.out.println(this.getClass().getSimpleName() + ".initialize");
+        toggleButtons();
+        configureDetails();
+        configureTable();
+        connectToService();
+        if (collectionList != null) {
+            collectionList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            collectionList.getSelectionModel().selectedItemProperty().addListener(collectionItemSelected);
+            displayedCollectionNames.addListener(collectionNamesListener);
+        }
+    }
 
-	void initialize() {
-		assert colItemName != null : "fx:id=\"colItemName\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert colItemState != null : "fx:id=\"colItemState\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert colGameOfOrigin != null : "fx:id=\"colGameOfOrigin\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert collectionName != null : "fx:id=\"collectionName\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert newItem != null : "fx:id=\"newItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert deleteItem != null : "fx:id=\"deleteItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert saveItem != null : "fx:id=\"saveItem\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert gameOfOrigin != null : "fx:id=\"gameOfOrigin\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert descriptionArea != null : "fx:id=\"descriptionArea\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert itemDescTextArea != null : "fx:id=\"itemDescTextArea\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert displayedItemLabel != null : "fx:id=\"displayedItemLabel\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
-		assert itemTable != null : "fx:id=\"itemTable\" was not injected: check your FXML file 'CollectionTracker.fxml'.";
+    /**
+     * Called when the newItem button is fired.
+     *
+     * @param event the action event.
+     */
+    @FXML
+    void newItemFired(ActionEvent event) {
+        final String selectedCollection = getSelectedCollection();
+        if (model != null && selectedCollection != null) {
+            ObservableCollectionItem item = model.createItemFor(selectedCollection);
+            if (itemTable != null) {
+                itemTable.getSelectionModel().clearSelection();
+                itemTable.getSelectionModel().select(item);
+            }
+        }
+    }
 
-		System.out.println(this.getClass().getSimpleName() + ".initialize");
-		toggleButtons();
-		configureDetails();
-		configureTable();
-		connectToService();
-		if (collectionName != null) {
-			collectionName.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-			collectionName.getSelectionModel().selectedItemProperty().addListener(collectionItemSelected);
-			displayedCollectionNames.addListener(collectionNamesListener);
-		}
-	}
+    /**
+     * Called when the deleteCollectionItem button is fired.
+     *
+     * @param event the action event.
+     */
+    @FXML
+    void deleteItemFired(ActionEvent event) {
+        final String selectedCollection = getSelectedCollection();
+        if (model != null && selectedCollection != null && itemTable != null) {
+            final List<?> selectedItem = new ArrayList<>(itemTable.getSelectionModel().getSelectedItems());
+            for (Object o : selectedItem) {
+                if (o instanceof ObservableCollectionItem) {
+                    model.deleteCollectionItem(((ObservableCollectionItem) o).getItemName());
+                }
+            }
+            itemTable.getSelectionModel().clearSelection();
+        }
+    }
 
-	@FXML
-	void newItemFired(ActionEvent event) {
-		final String selectedCollection = getSelectedCollection();
-		if (model != null && selectedCollection != null) {
-			ObservableCollectionItem item = model.createItemFor(selectedCollection);
-			if (itemTable != null) {
-				// Select the newly created issue.
-				itemTable.getSelectionModel().clearSelection();
-				itemTable.getSelectionModel().select(item);
-			}
-		}
-	}
+    /**
+     * Called when the saveCollectionItem button is fired.
+     *
+     * @param event the action event.
+     */
+    @FXML
+    void saveItemFired(ActionEvent event) {
+        final ObservableCollectionItem ref = getSelectedItem();
+        final CollectionList edited = new DetailsData();
+        ItemSaveState ItemSaveState = computeItemSaveState(edited, ref);
+        if (ItemSaveState == ItemSaveState.UNSAVED) {
+            model.saveCollectionItem(ref.getItemName(), edited.getItemState(),
+                    edited.getGameOfOrigin(), edited.getItemDescription());
+        }
+        int selectedRowIndex = itemTable.getSelectionModel().getSelectedIndex();
+        itemTable.getItems().clear();
+        displayedItems = model.getItemNames(getSelectedCollection());
+        for (String id : displayedItems) {
+            final ObservableCollectionItem item = model.getItem(id);
+            itemTable.getItems().add(item);
+        }
+        itemTable.getSelectionModel().select(selectedRowIndex);
 
-	@FXML
-	void deleteItemFired(ActionEvent event) {
-		final String selectedCollection = getSelectedCollection();
-		if (model != null && selectedCollection != null && itemTable != null) {
-			final List<?> selectedItem = new ArrayList<>(itemTable.getSelectionModel().getSelectedItems());
-			for (Object o : selectedItem) {
-				if (o instanceof ObservableCollectionItem) {
-					model.deleteCollectionItem(((ObservableCollectionItem) o).getItemName());
-				}
-			}
-			itemTable.getSelectionModel().clearSelection();
-		}
-	}
+        updateSaveItemButtonState();
+    }
+    
+    private void toggleButtons() {
+        if (newItem != null) {
+            newItem.setDisable(true);
+        }
+        if (saveCollectionItem != null) {
+            saveCollectionItem.setDisable(true);
+        }
+        if (deleteCollectionItem != null) {
+            deleteCollectionItem.setDisable(true);
+        }
+    }
+    
+    private ObservableList<String> displayedCollectionNames;
+   
+    private ObservableList<String> displayedItems;
+    
+    private final ListChangeListener<String> collectionNamesListener = new ListChangeListener<String>() {
 
-	@FXML
-	void saveItemFired(ActionEvent event) {
-		final ObservableCollectionItem ref = getSelectedItem();
-		final collectionList edited = new DetailsData();
-		itemSaveState saveState = computeItemSaveState(edited, ref);
-		if (saveState == itemSaveState.UNSAVED) {
-			model.saveCollection(ref.getItemName(), edited.getItemState(), edited.getGameOfOrigin(),
-					edited.getItemDescription());
-		}
-		int selectedRowIndex = itemTable.getSelectionModel().getSelectedIndex();
-		itemTable.getItems().clear();
-		displayedItems = model.getItemNames(getSelectedCollection());
-		for (String id : displayedItems) {
-			final ObservableCollectionItem item = model.getItem(id);
-			itemTable.getItems().add(item);
-		}
-		itemTable.getSelectionModel().select(selectedRowIndex);
+        @Override
+        public void onChanged(Change<? extends String> c) {
+            if (collectionsView == null) {
+                return;
+            }
+            while (c.next()) {
+                if (c.wasAdded() || c.wasReplaced()) {
+                    for (String p : c.getAddedSubList()) {
+                        collectionsView.add(p);
+                    }
+                }
+                if (c.wasRemoved() || c.wasReplaced()) {
+                    for (String p : c.getRemoved()) {
+                        collectionsView.remove(p);
+                    }
+                }
+            }
+            FXCollections.sort(collectionsView);
+        }
+    };
+    
+    private final ListChangeListener<String> collectionItemListener = new ListChangeListener<String>() {
 
-		updateSaveItemButtonState();
+        @Override
+        public void onChanged(Change<? extends String> c) {
+            if (itemTable == null) {
+                return;
+            }
+            while (c.next()) {
+                if (c.wasAdded() || c.wasReplaced()) {
+                    for (String p : c.getAddedSubList()) {
+                        itemTable.getItems().add(model.getItem(p));
+                    }
+                }
+                if (c.wasRemoved() || c.wasReplaced()) {
+                    for (String p : c.getRemoved()) {
+                        ObservableCollectionItem removed = null;
+                        for (ObservableCollectionItem t : itemTable.getItems()) {
+                            if (t.getItemName().equals(p)) {
+                                removed = t;
+                                break;
+                            }
+                        }
+                        if (removed != null) {
+                            itemTable.getItems().remove(removed);
+                        }
+                    }
+                }
+            }
+        }
+    };
 
-	}
+    
+    private void connectToService() {
+        if (model == null) {
+            model = new collectionTrackerEntry();
+            displayedCollectionNames = model.getCollectionNames();
+        }
+        collectionsView.clear();
+        List<String> sortedCollections = new ArrayList<>(displayedCollectionNames);
+        Collections.sort(sortedCollections);
+        collectionsView.addAll(sortedCollections);
+        collectionList.setItems(collectionsView);
+    }
+    
+    private final ListChangeListener<ObservableCollectionItem> tableSelectionChanged =
+            new ListChangeListener<ObservableCollectionItem>() {
 
-	private void toggleButtons() {
-		if (newItem != null) {
-			newItem.setDisable(true);
-		}
-		if (deleteItem != null) {
-			deleteItem.setDisable(true);
-		}
-		if (saveItem != null) {
-			saveItem.setDisable(true);
-		}
-	}
+                @Override
+                public void onChanged(Change<? extends ObservableCollectionItem> c) {
+                    updateDeleteItemButtonState();
+                    updateItemDetails();
+                    updateSaveItemButtonState();
+                }
+            };
 
-	private ObservableList<String> displayedCollectionNames;
+    private static String nonNull(String s) {
+        return s == null ? "" : s;
+    }
 
-	private ObservableList<String> displayedItems;
+    private void updateItemDetails() {
+        final ObservableCollectionItem selectedItem = getSelectedItem();
+        if (descriptionArea != null && selectedItem != null) {
+            if (displayedItemLabel != null) {
+                displayedItemName = selectedItem.getItemName();
+                displayedCollectionName = selectedItem.getCollectionName();
+                displayedItemLabel.setText( displayedItemName + " / " + displayedCollectionName );
+            }
+            if (gameOfOrigin != null) {
+                gameOfOrigin.setText(nonNull(selectedItem.getGameOfOrigin()));
+            }
+            if (itemStateValue != null) {
+                itemStateValue.setText(selectedItem.getItemState().toString());
+            }
+            if (itemDescTextArea != null) {
+                itemDescTextArea.selectAll();
+                itemDescTextArea.cut();
+                itemDescTextArea.setText(selectedItem.getItemDescription());
+            }
+        } else {
+            displayedItemLabel.setText("");
+            displayedItemName = null;
+            displayedCollectionName = null;
+        }
+        if (descriptionArea != null) {
+            descriptionArea.setVisible(selectedItem != null);
+        }
+    }
 
-	private final ListChangeListener<String> collectionNamesListener = new ListChangeListener<String>() {
-		@Override
-		public void onChanged(Change<? extends String> c) {
-			if (collectionsView == null) {
-				return;
-			}
-			while (c.next()) {
-				if (c.wasAdded() || c.wasReplaced()) {
-					for (String p : c.getAddedSubList()) {
-						collectionsView.add(p);
-					}
-				}
-				if (c.wasRemoved() || c.wasReplaced()) {
-					for (String p : c.getRemoved()) {
-						collectionsView.remove(p);
-					}
-				}
-			}
-			FXCollections.sort(collectionsView);
-		}
-	};
+    private boolean isVoid(Object o) {
+        if (o instanceof String) {
+            return isEmpty((String) o);
+        } else {
+            return o == null;
+        }
+    }
 
-	private final ListChangeListener<String> collectionItemListener = new ListChangeListener<String>() {
-		@Override
-		public void onChanged(Change<? extends String> c) {
-			if (itemTable == null) {
-				return;
-			}
-			while (c.next()) {
-				if (c.wasAdded() || c.wasReplaced()) {
-					for (String p : c.getAddedSubList()) {
-						itemTable.getItems().add(model.getItem(p));
-					}
-				}
-				if (c.wasRemoved() || c.wasReplaced()) {
-					for (String p : c.getRemoved()) {
-						ObservableCollectionItem removed = null;
-						for (ObservableCollectionItem t : itemTable.getItems()) {
-							if (t.getItemName().equals(p)) {
-								removed = t;
-								break;
-							}
-						}
-						if (removed != null) {
-							itemTable.getItems().remove(removed);
-						}
-					}
-				}
-			}
-		}
-	};
+    private boolean isEmpty(String s) {
+        return s == null || s.trim().isEmpty();
+    }
 
-	private void connectToService() {
-		if (model == null) {
-			model = new collectionTrackerEntry();
-			displayedCollectionNames = model.getCollectionNames();
-		}
-		collectionsView.clear();
-		List<String> sortedCollections = new ArrayList<>(displayedCollectionNames);
-		Collections.sort(sortedCollections);
-		collectionsView.addAll(sortedCollections);
-		collectionName.setItems(collectionsView);
-	}
+    private boolean equal(Object o1, Object o2) {
+        if (isVoid(o1)) {
+            return isVoid(o2);
+        }
+        return o1.equals(o2);
+    }
 
-	private final ListChangeListener<ObservableCollectionItem> tableSelectionChanged = new ListChangeListener<ObservableCollectionItem>() {
+    private static enum ItemSaveState {
 
-		@Override
-		public void onChanged(Change<? extends ObservableCollectionItem> c) {
-			updateDeleteItemButtonState();
-			updateItemDetails();
-			updateSaveItemButtonState();
-		}
-	};
+        INVALID, UNSAVED, UNCHANGED
+    }
 
-	private static String nonNull(String s) {
-		return s == null ? "" : s;
-	}
+    private final class DetailsData implements CollectionList {
 
-	private void updateItemDetails() {
-		final ObservableCollectionItem selectedItem = getSelectedItem();
-		if (descriptionArea != null && selectedItem != null) {
-			if (displayedItemLabel != null) {
-				displayedItemName = selectedItem.getItemName();
-				displayedCollectionName = selectedItem.getCollectionName();
-				displayedItemLabel.setText(displayedCollectionName + "/" + displayedItemName + ":");
-			}
-			if (gameOfOrigin != null) {
-				gameOfOrigin.setText(nonNull(selectedItem.getGameOfOrigin()));
-			}
-			if (itemStateValue != null) {
-				itemStateValue.setText(selectedItem.getItemState().toString());
-			}
-			if (itemDescTextArea != null) {
-				itemDescTextArea.selectAll();
-				itemDescTextArea.cut();
-				itemDescTextArea.setText(selectedItem.getItemDescription());
-			} else {
-				displayedItemLabel.setText("");
-				displayedItemName = null;
-				displayedCollectionName = null;
-			}
-			if (descriptionArea != null) {
-				descriptionArea.setVisible(selectedItem != null);
-			}
-		}
+        @Override
+        public String getItemName() {
+            if (displayedItemName == null || isEmpty(displayedItemLabel.getText())) {
+                return null;
+            }
+            return displayedItemName;
+        }
 
-	}
+        @Override
+        public ItemState getItemState() {
+            if (itemStateValue == null || isEmpty(itemStateValue.getText())) {
+                return null;
+            }
+            return ItemState.valueOf(itemStateValue.getText().trim());
+        }
+        
+        @Override
+        public String getCollectionName() {
+            if (displayedCollectionName == null || isEmpty(displayedItemLabel.getText())) {
+                return null;
+            }
+            return displayedCollectionName;
+        }
 
-	private boolean isVoid(Object o) {
-		if (o instanceof String) {
-			return isEmpty((String) o);
-		} else {
-			return o == null;
-		}
-	}
+        @Override
+        public String getGameOfOrigin() {
+            if (gameOfOrigin == null || isEmpty(gameOfOrigin.getText())) {
+                return "";
+            }
+            return gameOfOrigin.getText();
+        }
 
-	private boolean isEmpty(String s) {
-		return s == null || s.trim().isEmpty();
-	}
+        @Override
+        public String getItemDescription() {
+            if (itemDescTextArea == null || isEmpty(itemDescTextArea.getText())) {
+                return "";
+            }
+            return itemDescTextArea.getText();
+        }
+    }
 
-	private boolean equal(Object o1, Object o2) {
-		if (isVoid(o1)) {
-			return isVoid(o2);
-		}
-		return o1.equals(o2);
-	}
+    private ItemSaveState computeItemSaveState(CollectionList edited, CollectionList item) {
+        try {
+            if (!equal(edited.getItemName(), item.getItemName())) {
+                return ItemSaveState.INVALID;
+            }
+            if (!equal(edited.getCollectionName(), item.getCollectionName())) {
+                return ItemSaveState.INVALID;
+            }
+            if (!equal(edited.getItemState(), item.getItemState())) {
+                return ItemSaveState.UNSAVED;
+            }
+            if (!equal(edited.getGameOfOrigin(), item.getGameOfOrigin())) {
+                return ItemSaveState.UNSAVED;
+            }
+            if (!equal(edited.getItemDescription(), item.getItemDescription())) {
+                return ItemSaveState.UNSAVED;
+            }
+        } catch (Exception x) {
+            return ItemSaveState.INVALID;
+        }
+        return ItemSaveState.UNCHANGED;
+    }
 
-	private static enum itemSaveState {
-		INVALID, UNSAVED, UNCHANGED
-	}
+    private void updateDeleteItemButtonState() {
+        boolean disable = true;
+        if (deleteCollectionItem != null && itemTable != null) {
+            final boolean nothingSelected = itemTable.getSelectionModel().getSelectedItems().isEmpty();
+            disable = nothingSelected;
+        }
+        if (deleteCollectionItem != null) {
+            deleteCollectionItem.setDisable(disable);
+        }
+    }
 
-	private final class DetailsData implements collectionList {
+    private void updateSaveItemButtonState() {
+        boolean disable = true;
+        if (saveCollectionItem != null && itemTable != null) {
+            final boolean nothingSelected = itemTable.getSelectionModel().getSelectedItems().isEmpty();
+            disable = nothingSelected;
+        }
+        if (disable == false) {
+            disable = computeItemSaveState(new DetailsData(), getSelectedItem()) != ItemSaveState.UNSAVED;
+        }
+        if (saveCollectionItem != null) {
+            saveCollectionItem.setDisable(disable);
+        }
+    }
 
-		@Override
-		public String getCollectionName() {
-			if (displayedCollectionName == null || isEmpty(displayedItemLabel.getText())) {
-				return null;
-			}
-			return displayedCollectionName;
-		}
+    private void configureTable() {
+        colItemName.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colGameOfOrigin.setCellValueFactory(new PropertyValueFactory<>("gameOfOrigin"));
+        colItemState.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-		@Override
-		public String getGameOfOrigin() {
-			if (gameOfOrigin == null || isEmpty(gameOfOrigin.getText())) {
-				return "";
-			}
-			return gameOfOrigin.getText();
-		}
+        colItemName.setPrefWidth(75);
+        colItemState.setPrefWidth(75);
+        colGameOfOrigin.setPrefWidth(443);
 
-		@Override
-		public String getItemDescription() {
-			if(itemDescTextArea == null || isEmpty(itemDescTextArea.getText())) {
-				return "";
-			}
-			return itemDescTextArea.getText();
-		}
+        colItemName.setMinWidth(75);
+        colItemState.setMinWidth(75);
+        colGameOfOrigin.setMinWidth(443);
 
-		@Override
-		public String getItemName() {
-			if (displayedItemName == null || isEmpty(displayedItemLabel.getText())) {
-				return null;
-			}
-			return displayedItemName;
-		}
+        colItemName.setMaxWidth(750);
+        colItemState.setMaxWidth(750);
+        colGameOfOrigin.setMaxWidth(4430);
 
-		@Override
-		public ItemState getItemState() {
-			if (itemStateValue == null || isEmpty(itemStateValue.getText())) {
-				return null;
-			}
-			return ItemState.valueOf(itemStateValue.getText().trim());
-		}
-	}
+        itemTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-	private itemSaveState computeItemSaveState(collectionList edited, collectionList item) {
-		try {
-			if (!equal(edited.getItemName(), item.getItemName())) {
-				return itemSaveState.INVALID;
-			}
-			if (!equal(edited.getCollectionName(), item.getCollectionName())) {
-				return itemSaveState.INVALID;
-			}
-			if (!equal(edited.getItemState(), item.getItemState())) {
-				return itemSaveState.UNSAVED;
-			}
-			if (!equal(edited.getItemDescription(), item.getItemDescription())) {
-				return itemSaveState.UNSAVED;
-			}
-		} catch (Exception x) {
-			return itemSaveState.INVALID;
-		}
-		return itemSaveState.UNCHANGED;
-	}
+        itemTable.setItems(itemTableContent);
+        assert itemTable.getItems() == itemTableContent;
 
-	private void updateDeleteItemButtonState() {
-		boolean disable = true;
-		if (deleteItem != null && itemTable != null) {
-			final boolean nothingSelected = itemTable.getSelectionModel().getSelectedItems().isEmpty();
-			disable = nothingSelected;
-		}
-		if (deleteItem != null) {
-			deleteItem.setDisable(disable);
-		}
-	}
+        final ObservableList<ObservableCollectionItem> tableSelection = itemTable.getSelectionModel().getSelectedItems();
 
-	private void updateSaveItemButtonState() {
-		boolean disable = true;
-		if (saveItem != null && itemTable != null) {
-			final boolean nothingSelected = itemTable.getSelectionModel().getSelectedItems().isEmpty();
-			disable = nothingSelected;
-		}
-		if (disable == false) {
-			disable = computeItemSaveState(new DetailsData(), getSelectedItem()) != itemSaveState.UNSAVED;
-		}
-		if (saveItem != null) {
-			saveItem.setDisable(disable);
-		}
-	}
+        tableSelection.addListener(tableSelectionChanged);
+    }
 
-	private void configureTable() {
-		colItemName.setCellValueFactory(new PropertyValueFactory<>("item name"));
-		colGameOfOrigin.setCellValueFactory(new PropertyValueFactory<>("item description"));
-		colItemState.setCellValueFactory(new PropertyValueFactory<>("item state"));
+    /**
+     * Return the name of the project currently selected, or null if no project
+     * is currently selected.
+     *
+     */
+    public String getSelectedCollection() {
+        if (model != null && collectionList != null) {
+            final ObservableList<String> selectedProjectItem = collectionList.getSelectionModel().getSelectedItems();
+            final String selectedCollection = selectedProjectItem.get(0);
+            return selectedCollection;
+        }
+        return null;
+    }
 
-		// In order to limit the amount of setup in Getting Started we set the width
-		// of the 3 columns programmatically but one can do it from SceneBuilder.
-		colItemName.setPrefWidth(75);
-		colItemState.setPrefWidth(75);
-		colGameOfOrigin.setPrefWidth(443);
+    public ObservableCollectionItem getSelectedItem() {
+        if (model != null && itemTable != null) {
+            List<ObservableCollectionItem> selectedItems = itemTable.getSelectionModel().getSelectedItems();
+            if (selectedItems.size() == 1) {
+                final ObservableCollectionItem selectedItem = selectedItems.get(0);
+                return selectedItem;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Listen to changes in the collectionList selection, and updates the itemTable widget and
+     * deleteCollectionItem and newItem buttons accordingly.
+     */
+    private final ChangeListener<String> collectionItemSelected = new ChangeListener<String>() {
 
-		colItemName.setMinWidth(75);
-		colItemState.setMinWidth(75);
-		colGameOfOrigin.setMinWidth(443);
+        @Override
+        public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+            collectionUnselected(oldValue);
+            collectionSelected(newValue);
+        }
+    };
 
-		colItemName.setMaxWidth(750);
-		colItemState.setMaxWidth(750);
-		colGameOfOrigin.setMaxWidth(4430);
+    // Called when a project is unselected.
+    private void collectionUnselected(String oldCollectionName) {
+        if (oldCollectionName != null) {
+            displayedItems.removeListener(collectionItemListener);
+            displayedItems = null;
+            itemTable.getSelectionModel().clearSelection();
+            itemTable.getItems().clear();
+            if (newItem != null) {
+                newItem.setDisable(true);
+            }
+            if (deleteCollectionItem != null) {
+                deleteCollectionItem.setDisable(true);
+            }
+        }
+    }
 
-		itemTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    // Called when a project is selected.
+    private void collectionSelected(String newCollectionName) {
+        if (newCollectionName != null) {
+            itemTable.getItems().clear();
+            displayedItems = model.getItemNames(newCollectionName);
+            for (String id : displayedItems) {
+                final ObservableCollectionItem item = model.getItem(id);
+                itemTable.getItems().add(item);
+            }
+            displayedItems.addListener(collectionItemListener);
+            if (newItem != null) {
+                newItem.setDisable(false);
+            }
+            updateDeleteItemButtonState();
+            updateSaveItemButtonState();
+        }
+    }
 
-		itemTable.setItems(tableContent);
-		assert itemTable.getItems() == tableContent;
+    private void configureDetails() {
+        if (descriptionArea != null) {
+            descriptionArea.setVisible(false);
+        }
 
-		final ObservableList<ObservableCollectionItem> tableSelection = itemTable.getSelectionModel()
-				.getSelectedItems();
+        if (descriptionArea != null) {
+            descriptionArea.addEventFilter(EventType.ROOT, new EventHandler<Event>() {
 
-		tableSelection.addListener(tableSelectionChanged);
-	}
-
-	public String getSelectedCollection() {
-		if (model != null && collectionName != null) {
-			final ObservableList<String> selectedCollectionItem = collectionName.getSelectionModel().getSelectedItems();
-			final String selectedCollection = selectedCollectionItem.get(0);
-			return selectedCollection;
-		}
-		return null;
-	}
-
-	public ObservableCollectionItem getSelectedItem() {
-		if (model != null && itemTable != null) {
-			List<ObservableCollectionItem> selectedItems = itemTable.getSelectionModel().getSelectedItems();
-			if (selectedItems.size() == 1) {
-				final ObservableCollectionItem selectedItem = selectedItems.get(0);
-				return selectedItem;
-			}
-		}
-		return null;
-	}
-
-	private final ChangeListener<String> collectionItemSelected = new ChangeListener<String>() {
-		@Override
-		public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-			collectionUnselected(oldValue);
-			collectionSelected(newValue);
-		}
-	};
-
-	private void collectionUnselected(String oldCollectionName) {
-		if (oldCollectionName != null) {
-			displayedItems.removeListener(collectionItemListener);
-			displayedItems = null;
-			itemTable.getSelectionModel().clearSelection();
-			itemTable.getItems().clear();
-			if (newItem != null) {
-				newItem.setDisable(true);
-			}
-			if (deleteItem != null) {
-				deleteItem.setDisable(true);
-			}
-		}
-	}
-
-	private void collectionSelected(String newCollectionName) {
-		if (newCollectionName != null) {
-			itemTable.getItems().clear();
-			displayedItems = model.getItemNames(newCollectionName);
-			for (String id : displayedItems) {
-				final ObservableCollectionItem item = model.getItem(id);
-				itemTable.getItems().add(item);
-			}
-			displayedItems.addListener(collectionItemListener);
-			if (newItem != null) {
-				newItem.setDisable(false);
-			}
-			updateDeleteItemButtonState();
-			updateSaveItemButtonState();
-		}
-	}
-
-	private void configureDetails() {
-		if (descriptionArea != null) {
-			descriptionArea.setVisible(false);
-		}
-
-		if (descriptionArea != null) {
-			descriptionArea.addEventFilter(EventType.ROOT, new EventHandler<Event>() {
-
-				@Override
-				public void handle(Event event) {
-					if (event.getEventType() == MouseEvent.MOUSE_RELEASED
-							|| event.getEventType() == KeyEvent.KEY_RELEASED) {
-						updateSaveItemButtonState();
-					}
-				}
-			});
-		}
-	}
-
+                @Override
+                public void handle(Event event) {
+                    if (event.getEventType() == MouseEvent.MOUSE_RELEASED
+                            || event.getEventType() == KeyEvent.KEY_RELEASED) {
+                        updateSaveItemButtonState();
+                    }
+                }
+            });
+        }
+    }
 }
