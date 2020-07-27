@@ -58,8 +58,8 @@ public class CollectionTrackingController {
     @FXML //  fx:id="collectionList"
     private ListView<String> collectionList; 
 
-    @FXML //  fx:id="newItem"
-    private Button newItem; 
+    @FXML //  fx:id="newCollectionItem"
+    private Button newCollectionItem; 
 
     @FXML //  fx:id="saveCollectionItem"
     private Button saveCollectionItem; 
@@ -80,20 +80,20 @@ public class CollectionTrackingController {
     /**
      * Initializes the controller class.
      */
-    @FXML 
+    @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
-        assert colItemName != null : "fx:id=\"colItemName\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert colItemState != null : "fx:id=\"colItemState\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert colGameOfOrigin != null : "fx:id=\"colGameOfOrigin\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert deleteCollectionItem != null : "fx:id=\"deleteCollectionItem\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert itemDescTextArea != null : "fx:id=\"itemDescTextArea\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert descriptionArea != null : "fx:id=\"descriptionArea\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert displayedItemLabel != null : "fx:id=\"displayedItemLabel\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert newItem != null : "fx:id=\"newItem\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert saveCollectionItem != null : "fx:id=\"saveCollectionItem\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert gameOfOrigin != null : "fx:id=\"gameOfOrigin\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert itemTable != null : "fx:id=\"itemTable\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
-        assert collectionList != null : "fx:id=\"collectionList\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert colItemName != null : "fx:id=\"colItemName\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert colItemState != null : "fx:id=\"colItemState\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert colGameOfOrigin != null : "fx:id=\"colGameOfOrigin\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert deleteCollectionItem != null : "fx:id=\"deleteCollectionItem\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert itemDescTextArea != null : "fx:id=\"itemDescTextArea\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert descriptionArea != null : "fx:id=\"descriptionArea\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert displayedItemLabel != null : "fx:id=\"displayedItemLabel\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert newCollectionItem != null : "fx:id=\"newCollectionItem\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert saveCollectionItem != null : "fx:id=\"saveCollectionItem\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert gameOfOrigin != null : "fx:id=\"gameOfOrigin\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert itemTable != null : "fx:id=\"itemTable\" was not injected: check your FXML file 'collectiontracking.fxml'.";
+        assert collectionList != null : "fx:id=\"collectionList\" was not injected: check your FXML file 'collectiontracking.fxml'.";
         
         System.out.println(this.getClass().getSimpleName() + ".initialize");
         toggleButtons();
@@ -101,9 +101,9 @@ public class CollectionTrackingController {
         configureTable();
         connectToService();
         if (collectionList != null) {
-            collectionList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            collectionList.getSelectionModel().selectedItemProperty().addListener(collectionItemSelected);
-            displayedCollectionNames.addListener(collectionNamesListener);
+        	collectionList.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        	collectionList.getSelectionModel().selectedItemProperty().addListener(collectionItemSelected);
+        	displayedCollectionNames.addListener(collectionNamesListener);
         }
     }
 
@@ -170,8 +170,8 @@ public class CollectionTrackingController {
     }
     
     private void toggleButtons() {
-        if (newItem != null) {
-            newItem.setDisable(true);
+        if (newCollectionItem != null) {
+            newCollectionItem.setDisable(true);
         }
         if (saveCollectionItem != null) {
             saveCollectionItem.setDisable(true);
@@ -476,15 +476,15 @@ public class CollectionTrackingController {
         }
     };
 
-    // Called when a project is unselected.
+    // Called when a collection is unselected.
     private void collectionUnselected(String oldCollectionName) {
         if (oldCollectionName != null) {
             displayedItems.removeListener(collectionItemListener);
             displayedItems = null;
             itemTable.getSelectionModel().clearSelection();
             itemTable.getItems().clear();
-            if (newItem != null) {
-                newItem.setDisable(true);
+            if (newCollectionItem != null) {
+                newCollectionItem.setDisable(true);
             }
             if (deleteCollectionItem != null) {
                 deleteCollectionItem.setDisable(true);
@@ -492,7 +492,7 @@ public class CollectionTrackingController {
         }
     }
 
-    // Called when a project is selected.
+    // Called when a collection is selected.
     private void collectionSelected(String newCollectionName) {
         if (newCollectionName != null) {
             itemTable.getItems().clear();
@@ -502,8 +502,8 @@ public class CollectionTrackingController {
                 itemTable.getItems().add(item);
             }
             displayedItems.addListener(collectionItemListener);
-            if (newItem != null) {
-                newItem.setDisable(false);
+            if (newCollectionItem != null) {
+                newCollectionItem.setDisable(false);
             }
             updateDeleteItemButtonState();
             updateSaveItemButtonState();
