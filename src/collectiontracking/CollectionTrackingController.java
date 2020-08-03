@@ -412,9 +412,9 @@ public class CollectionTrackingController {
     }
 
     private void configureTable() {
-        colItemName.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colItemName.setCellValueFactory(new PropertyValueFactory<>("itemName"));
         colGameOfOrigin.setCellValueFactory(new PropertyValueFactory<>("gameOfOrigin"));
-        colItemState.setCellValueFactory(new PropertyValueFactory<>("status"));
+        colItemState.setCellValueFactory(new PropertyValueFactory<>("itemState"));
 
         colItemName.setPrefWidth(75);
         colItemState.setPrefWidth(75);

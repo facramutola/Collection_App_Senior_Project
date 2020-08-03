@@ -132,7 +132,7 @@ public class collectionTrackerEntry implements collectionTracker {
 
 	}
 
-	final MapChangeListener<String, CollectionEntry> collectionMapChangeListener = new MapChangeListener<String, CollectionEntry>() {
+	final MapChangeListener<String, CollectionEntry> itemsMapChangeListener = new MapChangeListener<String, CollectionEntry>() {
 		@Override
 		public void onChanged(Change<? extends String, ? extends CollectionEntry> change) {
 			if (change.wasAdded()) {
@@ -152,21 +152,40 @@ public class collectionTrackerEntry implements collectionTracker {
 	{
 		final Map<String, CollectionEntry> testMap = new TreeMap<>();
 		itemsMap = FXCollections.observableMap(testMap);
-		itemsMap.addListener(collectionMapChangeListener);
+		itemsMap.addListener(itemsMapChangeListener);
 		CollectionEntry persona;
 		persona = createItemFor("Jack Frost Personas");
 		persona.setGameOfOrigin("Megami Tensei II");
 		persona.setItemName("Jack Frost");
 		persona.setItemDescription(
 				"A winter fairy of European descent. He leaves ice patterns on windows and nips people's noses. Though normally an innocent creature, he will freeze his victims to death if provoked.");
-		// persona.setItemState(ItemState.HAVE);
+		persona.setItemState(ItemState.HAVE);
+		
+		persona = createItemFor("Jack Frost Personas");
+		persona.setItemName("Black Frost");
+		persona.setGameOfOrigin("Shin Megami Tensei III: Nocturne");
+		persona.setItemDescription("A Jack Frost that yearned for evil. This powerful demon is born when a cute Jack Frost remembers its nature as a demon.");
+		persona.setItemState(ItemState.DO_NOT_HAVE);
+		
+		persona = createItemFor("Jack Frost Personas");
+		persona.setItemName("Pyro Jack");
+		persona.setGameOfOrigin("Megami Tensei II");
+		persona.setItemDescription("Also known as Jack O`Lantern, he was an Irish farmer who persuaded Satan not to take him to hell. When he was refused entry into heaven, he wandered earth as a pumpkin-headed soul.");
+		persona.setItemState(ItemState.DO_NOT_HAVE);
+
+		persona = createItemFor("Jack Frost Personas");
+		persona.setItemName("King Frost");
+		persona.setGameOfOrigin("Shin Megami Tensei II");
+		persona.setItemDescription("The king of snow who rules over an infinite number of Jack Frosts. He has the power to freeze the entire world, but is unaware of it due to his naive personality.");
+		persona.setItemState(ItemState.HAVE);
+
 
 		persona = createItemFor("Cryptid and Mythology Personas");
 		persona.setItemName("Mothman");
 		persona.setItemDescription(
 				"A cryptid sighted during the 60s-80s in West Virginia. It has shining red eyes and is named for the fin-like appendages on its sides. It uses its keen sense for blood to track down the source and feed on it.");
 		persona.setGameOfOrigin("Shin Megami Tensei III: Nocturne");
-		// persona.setItemState(ItemState.HAVE);
+		persona.setItemState(ItemState.HAVE);
 	}
 	
 	private static <T> List<T> newList(T... items) {
@@ -185,8 +204,8 @@ public class collectionTrackerEntry implements collectionTracker {
 	}
 
 	@Override
-	public ObservableList<String> getItemNames(String itemNames) {
-		return collectionsMap.get(itemNames);
+	public ObservableList<String> getItemNames(String collectionName) {
+		return collectionsMap.get(collectionName);
 	}
 
 	@Override
